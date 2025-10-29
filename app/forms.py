@@ -21,10 +21,12 @@ class RegistrationForm(FlaskForm):
         validators=[
             DataRequired(),
             # server-side required
-            Regexp( r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(?:edu|ac\.uk|org)$'),
+            Regexp( r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(?:edu|ac\.uk|org)$',
+                    message="Email must follow standard email format. Only domains expected: .edu, .ac.uk and .org"),
             # always confirms the correct email format, also makes sure of an @ and the allowed domains
         ]
     )
+    # Todo add complexity rules in part B
     password = PasswordField("Password", validators=[DataRequired()])
     confirm_password = PasswordField(
         "Confirm Password",
@@ -33,3 +35,7 @@ class RegistrationForm(FlaskForm):
 
     bio = TextAreaField("Bio / Comment")
     submit = SubmitField("Register")
+
+    def validate_username(self, username):
+        if username.data.strip().lower() in blacklist:
+            raise ValidationError("Username is blacklisted, Please choose another.")
