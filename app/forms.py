@@ -1,8 +1,12 @@
+import re
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Regexp, regexp
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Regexp
 
-blacklist = ['admin', 'root', 'superuser']  #
+blacklisted_usernames = ['admin', 'root', 'superuser']
+blacklisted_passwords = ['password123', 'admin', '123456', 'qwerty', 'letmein', 'welcome', 'iloveyou',
+                         'abc123', 'monkey', 'football']
 
 class RegistrationForm(FlaskForm):
     username = StringField(
@@ -26,7 +30,7 @@ class RegistrationForm(FlaskForm):
             # always confirms the correct email format, also makes sure of an @ and the allowed domains
         ]
     )
-    # Todo add complexity rules in part B
+
     password = PasswordField("Password", validators=[DataRequired()])
     confirm_password = PasswordField(
         "Confirm Password",
@@ -36,6 +40,43 @@ class RegistrationForm(FlaskForm):
     bio = TextAreaField("Bio / Comment")
     submit = SubmitField("Register")
 
-    def validate_username(self, username):
-        if username.data.strip().lower() in blacklist:
+    def validate_username(self, field):
+        if field.data.strip().lower() in blacklisted_usernames:
             raise ValidationError("Username is blacklisted, Please choose another.")
+
+    def validate_password(self, field):
+        password = field.data
+        lowercase_password = password.lower()
+        username = (self.username.data).lower()
+        email = (self.email.data).lower()
+
+        # Blacklisted common password condition
+        if lowercase_password in blacklisted_passwords:
+            raise ValidationError("Password is common, please choose a stronger password.")
+
+        # General password conditions
+        if len(password) < 12:
+            # Length 12 or over
+            raise ValidationError("Password must be at least 12 characters long.")
+        if not re.search(r"A-Z", password):
+            # Capital letter
+            raise ValidationError("Password must contain at least one uppercase letter.")
+        if not re.search(r"[a-z]", password):
+            # Lowercase letter
+            raise ValidationError("Password must contain at least one lowercase letter.")
+        if not re.search(r"\d", password):
+            # Number
+            raise ValidationError("Password must contain at least one number.")
+        if not re.search(r"[^A-Za-z0-9]", password):
+            # Special character
+            raise ValidationError("Password must contain at least one special character.")
+        if not re.search(r"\s", password):
+            # Whitespace
+            raise ValidationError("Password must not contain any whitespace.")
+
+        # Username and email password conditions
+        if username in lowercase_password:
+            raise ValidationError("Password must not contain the username")
+        if email in lowercase_password:
+            raise ValidationError("Password must not contain the email")
+
