@@ -1,6 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+import bleach
+from .forms import RegistrationForm
 
 main = Blueprint('main', __name__)
+
+whitelisted_tags = ['b', 'i', 'u', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li']
+whitelisted_attributes = {'a': ['href', 'title']}
+whitelisted_protocols = ['http', 'https', 'mailto']
 
 @main.route('/', methods=['GET'])
 def home():
