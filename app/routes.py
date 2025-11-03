@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 import bleach
 from .forms import RegistrationForm
 
-main = Blueprint('main', __name__)
+
+
+main = Blueprint('main', __name__, template_folder='templates')
 
 whitelisted_tags = ['b', 'i', 'u', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li']
 whitelisted_attributes = {'a': ['href', 'title']}
@@ -20,5 +22,22 @@ def client_ip():
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
-    name = request.form.get('name') if request.method == 'POST' else ''
-    return render_template('register.html', name=name)
+
+    form = RegistrationForm()
+    bio_html = ""
+
+    if form.validate_on_submit():
+        raw_bio = form.bio.data
+
+        cleaned = bleach.clean(raw_bio, tags=whitelisted_tags, attributes=whitelisted_attributes,
+                               protocols=whitelisted_protocols, strip=True )
+
+        if cleaned != raw_bio:
+            flash(warning_message, "warning")
+
+        bio_html = cleaned
+        flash("Registered successfully!", "success")
+        return render_template('register.html', form=form, bio_html=bio_html)
+
+    return render_template("register.html", form=form, bio_html=bio_html)
+
