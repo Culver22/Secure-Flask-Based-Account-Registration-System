@@ -37,7 +37,7 @@ def register():
 
         bio_html = cleaned
         flash("Registered successfully!", "success")
-        return render_template('register.html', form=form, bio_html=bio_html)
+        return render_template("register.html", form=form, bio_html=bio_html)
 
     return render_template("register.html", form=form, bio_html=bio_html)
 
