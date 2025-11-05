@@ -75,7 +75,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("Password must contain at least one lowercase letter.")
         if not re.search(r"\d", password):
             # Number
-            raise ValidationError("Password must contain at least one number.")
+            raise ValidationError("Password must contain at least one digit.")
         if not re.search(r"[^A-Za-z0-9]", password):
             # Special character
             raise ValidationError("Password must contain at least one special character.")
@@ -98,7 +98,7 @@ class RegistrationForm(FlaskForm):
 
         # Check username/local-part of email address
         if local_part != "" and local_part in lowercase_password:
-            raise ValidationError("Password must not contain parts of the email (username).")
+            raise ValidationError("Password must not contain parts of the email (local-part).")
 
         # Check email domain
         primary_domain = domain_part.split(".",1)[0]
