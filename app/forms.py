@@ -93,6 +93,8 @@ class RegistrationForm(FlaskForm):
 
         # Partial email check
         parts = email.split("@")
+        # Regex for email will always ensure there will be two parts, hence not using a guard as there
+        # won't be an IndexError
         local_part = parts[0]
         domain_part = parts[1]
 
