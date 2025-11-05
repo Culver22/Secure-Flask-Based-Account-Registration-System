@@ -3,6 +3,7 @@ import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Regexp
+from flask import current_app
 
 blacklisted_usernames = ['admin', 'root', 'superuser']
 blacklisted_passwords = ['password123', 'admin', '123456', 'qwerty', 'letmein', 'welcome', 'iloveyou',
@@ -42,7 +43,15 @@ class RegistrationForm(FlaskForm):
 
     def validate_username(self, field):
         if field.data.strip().lower() in blacklisted_usernames:
+            # log blacklisted username attempt
+            current_app.logger.warning("Blacklisted username: %s", field.data.strip())
             raise ValidationError("Username is blacklisted, Please choose another.")
+
+    def validate_email(self, field):
+        # log invalid domain attempt
+        email = (field.data or "").strip().lower()
+        if not (email.endswith(".edu") or email.endswith(".ac.uk") or email.endswith(".org")):
+            current_app.logger.warning("Invalid email domain attempt: %s", email)
 
     def validate_password(self, field):
         password = field.data
