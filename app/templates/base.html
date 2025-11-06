@@ -1,9 +1,23 @@
 <!doctype html>
 <html>
-<head>
+  <head>
+    <meta charset="utf-8">
     <title>{% block title %}Secure Registration{% endblock %}</title>
-</head>
-<body>
+  </head>
+  <body>
+
+    {# Flash messages: success/warnings from the server #}
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <ul>
+          {% for category, msg in msgs %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {# Page content goes here #}
     {% block content %}{% endblock %}
-</body>
+  </body>
 </html>
