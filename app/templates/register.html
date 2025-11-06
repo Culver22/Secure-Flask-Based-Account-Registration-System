@@ -1,8 +1,47 @@
 {% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+
 {% block content %}
-<form method="POST" novalidate>
-    <input name="name" placeholder="Enter your name">
-    <input type="submit" value="Register">
-</form>
-<p>Hello {{ name | safe }}</p>
+  <h1>Register</h1>
+
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="field-username">
+      {{ form.username.label }}<br>
+      {{ form.username() }}
+      {% for err in form.username.errors %}<ul><li>{{ err }}</li></ul>{% endfor %}
+    </div>
+
+    <div class="field-email">
+      {{ form.email.label }}<br>
+      {{ form.email() }}
+      {% for err in form.email.errors %}<ul><li>{{ err }}</li></ul>{% endfor %}
+    </div>
+
+    <div class="field-password">
+      {{ form.password.label }}<br>
+      {{ form.password() }}
+      {% for err in form.password.errors %}<ul><li>{{ err }}</li></ul>{% endfor %}
+    </div>
+
+    <div class="field-confirm">
+      {{ form.confirm_password.label }}<br>
+      {{ form.confirm_password() }}
+      {% for err in form.confirm_password.errors %}<ul><li>{{ err }}</li></ul>{% endfor %}
+    </div>
+
+    <div class="field-bio">
+      {{ form.bio.label }}<br>
+      {{ form.bio() }}
+      {% for err in form.bio.errors %}<ul><li>{{ err }}</li></ul>{% endfor %}
+    </div>
+
+    <p><input type="submit" value="Register"></p>
+  </form>
+
+  {% if bio_html %}
+    <h2>Bio Preview</h2>
+    <div>{{ bio_html | safe }}</div>
+  {% endif %}
 {% endblock %}
