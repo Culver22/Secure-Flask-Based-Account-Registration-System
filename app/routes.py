@@ -15,7 +15,7 @@ def home():
     return redirect(url_for('main.register'))
 
 def client_ip():
-    # Returns real client IP. If behind a proxy, X-Forwarded-For contains original client IP.
+    # returns real client IP. If behind a proxy, X-Forwarded-For contains original client IP.
     return request.headers.get('X-Forwarded-For', request.remote_addr)
 
 @main.route('/register', methods=['GET', 'POST'])
@@ -25,7 +25,7 @@ def register():
     bio_html = ""  # default empty bio if GET request
 
     if form.validate_on_submit():
-        raw_bio = form.bio.data
+        raw_bio = form.bio.data or ""  # if bio left empty
 
         cleaned = bleach.clean(
             raw_bio,
@@ -35,7 +35,7 @@ def register():
             strip=True
         )
 
-        # Log suspicious HTML removal
+        # log suspicious HTML removal
         if cleaned != raw_bio:
             current_app.logger.warning(
                 "Bio sanitization applied | ip=%s | username=%s",
@@ -45,7 +45,7 @@ def register():
 
         bio_html = cleaned
 
-        # Log successful registration event
+        # log successful registration event
         current_app.logger.info(
             "Registration succeeded | ip=%s | username=%s | email=%s",
             client_ip(), form.username.data, form.email.data
@@ -54,8 +54,8 @@ def register():
         flash("Registered successfully!", "success")
         return render_template("register.html", form=form, bio_html=bio_html)
 
-    # Log validation failures / suspicious attempts
-    if request.method == 'POST' and not form.validate():
+    # log validation failures / suspicious attempts
+    if request.method == 'POST':
         current_app.logger.warning(
             "Validation failed | ip=%s | username=%s | email=%s | errors=%s",
             client_ip(), form.username.data, form.email.data, dict(form.errors)

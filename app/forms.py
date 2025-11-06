@@ -1,5 +1,4 @@
 import re
-
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Regexp
@@ -44,14 +43,15 @@ class RegistrationForm(FlaskForm):
     def validate_username(self, field):
         if field.data.strip().lower() in blacklisted_usernames:
             # log blacklisted username attempt
-            current_app.logger.warning("Blacklisted username: %s", field.data.strip())
+            current_app.logger.warning("Blacklisted username attempt | username=%s", field.data.strip())
             raise ValidationError("Username is blacklisted, Please choose another.")
 
     def validate_email(self, field):
         # log invalid domain attempt
         email = (field.data or "").strip().lower()
         if not (email.endswith(".edu") or email.endswith(".ac.uk") or email.endswith(".org")):
-            current_app.logger.warning("Invalid email domain attempt: %s", email)
+            current_app.logger.warning("Invalid email domain attempt | username=%s | email=%s",
+                           (self.username.data or "").strip(), email)
 
     def validate_password(self, field):
         password = field.data
@@ -59,50 +59,50 @@ class RegistrationForm(FlaskForm):
         username = self.username.data.lower()
         email = self.email.data.lower()
 
-        # Blacklisted common password condition
+        # blacklisted password condition
         if lowercase_password in blacklisted_passwords:
             raise ValidationError("Password is common, please choose a stronger password.")
 
-        # General password conditions
+        # general password conditions
         if len(password) < 12:
-            # Length 12 or over
+            # length 12 or over
             raise ValidationError("Password must be at least 12 characters long.")
         if not re.search(r"[A-Z]", password):
-            # Capital letter
+            # capital letter
             raise ValidationError("Password must contain at least one uppercase letter.")
         if not re.search(r"[a-z]", password):
-            # Lowercase letter
+            # lowercase letter
             raise ValidationError("Password must contain at least one lowercase letter.")
         if not re.search(r"\d", password):
-            # Number
+            # number
             raise ValidationError("Password must contain at least one digit.")
         if not re.search(r"[^A-Za-z0-9]", password):
-            # Special character
+            # special character
             raise ValidationError("Password must contain at least one special character.")
         if re.search(r"\s", password):
-            # Whitespace
+            # whitespace
             raise ValidationError("Password must not contain any whitespace.")
 
-        # Username conditions
+        # username conditions
         if username in lowercase_password:
             raise ValidationError("Password must not contain the username")
 
-        # Full email check
+        # full email check
         if email in lowercase_password:
             raise ValidationError("Password must not contain the email")
 
-        # Partial email check
+        # partial email check
         parts = email.split("@")
-        # Regex for email will always ensure there will be two parts, hence not using a guard as there
+        # regex for email will always ensure there will be two parts, hence not using a guard as there
         # won't be an IndexError
         local_part = parts[0]
         domain_part = parts[1]
 
-        # Check username/local-part of email address
+        # check username/local-part of email address
         if local_part != "" and local_part in lowercase_password:
             raise ValidationError("Password must not contain parts of the email (local-part).")
 
-        # Check email domain
+        # check email domain
         primary_domain = domain_part.split(".",1)[0]
         if primary_domain != "" and primary_domain in lowercase_password:
             raise ValidationError("Password must not contain parts of the email (domain).")
